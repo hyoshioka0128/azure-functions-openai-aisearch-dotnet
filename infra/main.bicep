@@ -38,9 +38,9 @@ param chatGptDeploymentVersion string = ''
 param chatGptDeploymentCapacity int = 0
 
 var chatGpt = {
-  modelName: !empty(chatGptModelName) ? chatGptModelName : startsWith(openAiHost, 'azure') ? 'gpt-35-turbo' : 'gpt-3.5-turbo'
+  modelName: !empty(chatGptModelName) ? chatGptModelName : startsWith(openAiHost, 'azure') ? 'gpt-4o' : 'gpt-4o'
   deploymentName: !empty(chatGptDeploymentName) ? chatGptDeploymentName : 'chat'
-  deploymentVersion: !empty(chatGptDeploymentVersion) ? chatGptDeploymentVersion : '0613'
+  deploymentVersion: !empty(chatGptDeploymentVersion) ? chatGptDeploymentVersion : '2024-05-13'
   deploymentCapacity: chatGptDeploymentCapacity != 0 ? chatGptDeploymentCapacity : 40
 }
 
@@ -53,7 +53,7 @@ var embedding = {
   modelName: !empty(embeddingModelName) ? embeddingModelName : 'text-embedding-3-small'
   deploymentName: !empty(embeddingDeploymentName) ? embeddingDeploymentName : 'embeddings'
   deploymentVersion: !empty(embeddingDeploymentVersion) ? embeddingDeploymentVersion : '1'
-  deploymentCapacity: embeddingDeploymentCapacity != 0 ? embeddingDeploymentCapacity : 220
+  deploymentCapacity: embeddingDeploymentCapacity != 0 ? embeddingDeploymentCapacity : 100
   dimensions: embeddingDimensions != 0 ? embeddingDimensions : 1536
 }
 
@@ -138,6 +138,7 @@ module ai 'core/ai/openai.bicep' = {
     deployments: [
       {
         name: embedding.deploymentName
+        skuname: 'Standard'
         capacity: embedding.deploymentCapacity
         model: {
           format: 'OpenAI'
@@ -145,11 +146,12 @@ module ai 'core/ai/openai.bicep' = {
           version: embedding.deploymentVersion
         }
         scaleSettings: {
-          scaleType: 'Standard'
+          scaleType: 'AutoScale'
         }
       }
       {
         name: chatGpt.deploymentName
+        skuname: 'GlobalStandard'
         capacity: chatGpt.deploymentCapacity
         model: {
           format: 'OpenAI'
@@ -157,7 +159,7 @@ module ai 'core/ai/openai.bicep' = {
           version: chatGpt.deploymentVersion
         }
         scaleSettings: {
-          scaleType: 'Standard'
+          scaleType: 'AutoScale'
         }
       }
     ]
